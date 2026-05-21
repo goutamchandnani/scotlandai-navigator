@@ -1,0 +1,14 @@
+{
+  "agents": {
+    "scotland-ai-navigator": {
+      "systemPrompt": "path:./skills/scotland-ai-navigator/antigravity_prompt.md",
+      "model": "gemini-2.0-flash",
+      "skills": ["scotland-ai-navigator"],
+      "thinking": {
+        "budget": 8000,
+        "level": "medium"
+      },
+      "temperature": 0.6
+    }
+  }
+}

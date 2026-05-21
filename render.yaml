@@ -1,0 +1,24 @@
+# ScotlandAI Navigator — Render Deployment Configuration
+# This file tells Render exactly how to build and run the backend.
+
+services:
+  - type: web
+    name: scotland-ai-navigator
+    runtime: python
+    region: frankfurt          # Closest region to Scotland
+    plan: free                 # Free tier for competition demo
+    rootDir: backend
+    buildCommand: "pip install -r requirements.txt"
+    startCommand: "gunicorn -w 2 -k uvicorn.workers.UvicornWorker main:app --bind 0.0.0.0:$PORT --timeout 120"
+    healthCheckPath: /health
+    envVars:
+      - key: GEMINI_API_KEY
+        sync: false            # Set manually in Render dashboard (secret)
+      - key: SECRET_KEY
+        generateValue: true    # Auto-generates a secure random value
+      - key: ENVIRONMENT
+        value: production
+      - key: PDF_EXPIRY_MINUTES
+        value: "60"
+      - key: PYTHON_VERSION
+        value: "3.11"
