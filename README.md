@@ -2,119 +2,381 @@
 
 **Turn any Scottish organisation's AI ambition into a concrete, board-ready opportunity brief — in under 10 minutes.**
 
+[![Built for DataVita](https://img.shields.io/badge/Built%20for-DataVita%20OpenClaw%20Challenge-1B3A5C?style=for-the-badge)](https://datavita.co.uk)
+[![Powered by Gemini](https://img.shields.io/badge/Powered%20by-Gemini%203%20Flash-4285F4?style=for-the-badge)](https://ai.google.dev)
+[![Deploy to Render](https://img.shields.io/badge/Deploy%20to-Render-46E3B7?style=for-the-badge)](https://render.com)
+
 ---
 
 ## The Problem
 
-Danny Quinn, Managing Director of DataVita, wrote:
+Danny Quinn, Managing Director of DataVita, wrote this:
 
 > *"Many of the people making decisions about AI infrastructure in Scotland simply don't understand what's at stake. The path we collectively choose today will define our country for decades."*
 
-DataVita's AI Solutions team closes the AI understanding gap manually today — discovery meetings, senior people, weeks of elapsed time before a recommendation exists. That process does not scale against DataVita's ambitions: a £44.9M Glasgow City Council contract, UCL's £19.5M supercomputer, CoreWeave GPU infrastructure, and plans for 500MW of capacity.
+He wasn't writing about technology. He was writing about a **gap** — the gap between organisations that could transform their operations with AI and the knowledge required to take the first step.
 
-**ScotlandAI Navigator closes this gap in minutes. Automatically. At scale.**
+**Today, DataVita's AI Solutions team closes this gap manually.** A prospect calls. A discovery meeting is booked. Senior people spend hours — sometimes weeks — understanding the organisation's operations, data, and goals before they can produce a recommendation.
+
+That process does not scale. DataVita has a £44.9M Glasgow City Council contract, UCL's £19.5M supercomputer, CoreWeave GPU infrastructure on-site, and plans for 500MW of capacity. The pipeline of organisations that need this conversation is enormous. The team that can have it is small.
+
+**ScotlandAI Navigator closes this gap in minutes. Automatically. At scale. On any channel.**
 
 ---
 
 ## What It Does
 
-ScotlandAI Navigator is an AI agent that any Scottish organisation can talk to — from Telegram, Slack, WhatsApp, or any OpenClaw-connected channel.
+ScotlandAI Navigator is an AI agent that any Scottish organisation can talk to — on Telegram, Slack, WhatsApp, or any OpenClaw-connected channel.
 
-It asks **five intelligent questions** — one at a time, like a conversation, not a form — then produces a structured **AI Opportunity Brief** containing:
+Through a **5-question conversational discovery** (one question at a time, like a real conversation — not a form), it builds a complete picture of the organisation and then produces:
 
-- **3 specific AI products** the organisation could realistically build
-- Each mapped to the **right DataVita infrastructure tier** (DV1, DV2, or CoreWeave GPU)
-- A **recommended 90-day first step** — specific enough to act on immediately
-- An **executive summary** a non-technical board member can read and understand
-- A **downloadable PDF** formatted for professional presentation
+### 📄 The AI Opportunity Brief
 
-Every output is a warm, qualified lead for DataVita's AI Solutions team.
+| Section | What it contains |
+|---------|-----------------|
+| **Executive Summary** | 3 sentences a non-technical board member can understand |
+| **3 AI Opportunities** | Specific products this organisation could build — not generic advice |
+| **Infrastructure Mapping** | Which DataVita facility (DV1, DV2, CoreWeave GPU) fits each workload |
+| **90-Day First Step** | The single smallest valuable thing they could ship this quarter |
+| **Downloadable PDF** | Professional document ready for board presentation (60-min link) |
+
+**Every output is a warm, qualified lead for DataVita's AI Solutions team.**
 
 ---
 
-## How It Works
+## How It Works — The Conversation
 
 ```
-User messages:  "What could AI do for our council?"
-        │
-        ▼
-   5-question discovery conversation
-   (adaptive, one question at a time)
-        │
-        ▼
-   FastAPI backend validates answers
-   Python maps infrastructure (deterministic — not AI)
-   Gemini generates the brief content
-   ReportLab renders a professional PDF
-        │
-        ▼
-   Board-ready AI Opportunity Brief
-   + downloadable PDF (60-min link)
+User: "What could AI do for our council?"
+
+Navigator: Scotland has some of the best AI infrastructure in Europe, and
+           your council could be using it. Let me ask you five quick questions
+           and I'll put together a specific brief for your leadership team.
+
+           What does your council actually struggle with most operationally
+           right now?
+
+User: Planning applications. We get 400 a month and each one takes
+      3 hours to review and route manually.
+
+Navigator: That's a significant workload — exactly where AI creates fast ROI.
+           What data do you already have digitally?
+
+User: PDFs going back 10 years, a SQL database tracking decisions,
+      and Excel for officer assignments.
+
+Navigator: Strong foundation. What would a 20% reduction in that workload
+           be worth?
+
+User: Probably 2 full-time officers. Around £80,000 a year.
+
+Navigator: Are you looking for a quick win or longer transformation?
+
+User: Quick win. Need to show results before we can get more budget.
+
+Navigator: Last one: do you have a technical team internally?
+
+User: Two developers, but no AI experience.
+
+Navigator: Got everything I need. Building your brief now...
+
+           ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+           🏴󠁧󠁢󠁳󠁣󠁴󠁿 SCOTLAND AI OPPORTUNITY BRIEF
+           ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+           EXECUTIVE SUMMARY
+           Your council processes over 400 planning applications per month
+           through manual review, costing approximately 1,200 staff hours.
+           An AI tool that reads, classifies, and routes these applications
+           could save an estimated £80,000 per year. The fastest path is
+           a 90-day pilot using your existing 10-year PDF archive.
+
+           OPPORTUNITY 1 — Planning Application Triage Agent
+           ...
+
+           📎 Download PDF brief [valid 60 min]
 ```
+
+---
+
+## Architecture — Every Decision Explained
+
+```
+┌─────────────────────────────────────────────────────┐
+│               USER (any channel)                      │
+│         Telegram · Slack · WhatsApp · Web              │
+└──────────────────────┬──────────────────────────────┘
+                       │
+                       ▼
+┌─────────────────────────────────────────────────────┐
+│              OPENCLAW GATEWAY                         │
+│  ScotlandAI Navigator Agent                           │
+│  (antigravity_prompt.md + Gemini 3 Flash Preview)     │
+│                                                       │
+│  Runs 5-question discovery conversation               │
+│  Adapts questions based on previous answers            │
+│  One question at a time (conversation, not form)       │
+└──────────────────────┬──────────────────────────────┘
+                       │ POST /generate-brief
+                       │ (when all 5 answers collected)
+                       ▼
+┌─────────────────────────────────────────────────────┐
+│              FASTAPI BACKEND                          │
+│                                                       │
+│  1. Pydantic validates all 5 answers                  │
+│  2. Python maps infrastructure (DETERMINISTIC)        │
+│  3. Gemini generates brief (STRUCTURED JSON)          │
+│  4. Pydantic validates Gemini's output                │
+│  5. ReportLab renders PDF                             │
+│  6. itsdangerous signs 60-min download link            │
+│                                                       │
+│  One POST in → One brief out                          │
+│  No database. No sessions. Stateless.                 │
+└──────────────────────┬──────────────────────────────┘
+                       │
+                       ▼
+              Board-ready brief + PDF
+```
+
+### Why Each Technology Was Chosen
+
+Every technology in this stack was chosen by asking: *"What is the minimum required to make the output genuinely useful?"*
+
+| Technology | What it does | Why this one |
+|-----------|-------------|-------------|
+| **Gemini 3 Flash Preview** | Generates brief content from discovery answers | Fast (<5s), cheap (<£0.01/brief), structured JSON output guarantees valid format. Medium thinking budget (8000 tokens) for specific, not generic, recommendations. |
+| **FastAPI** | Backend API framework | Async (non-blocking Gemini calls), Pydantic-native (validation is free), auto-generates OpenAPI docs. |
+| **Pydantic V2** | Double validation — inputs AND outputs | Catches nonsense answers before Gemini sees them. Catches vague language after Gemini produces it. Two safety nets, not one. |
+| **ReportLab** | Professional PDF generation | Pure Python (no external service, no API key, no cost). Full control over layout. The PDF is the artefact that gets forwarded to the board — it must look professional. |
+| **itsdangerous** | Signed, expiring download links | 60-minute PDF links without needing a database. Token contains filename + timestamp, cryptographically signed. Stateless. |
+| **Render** | Cloud deployment | Auto-deploy from GitHub. Free tier for demo. Zero config with render.yaml. |
+
+### What We Deliberately Did NOT Build
+
+| Not built | Why not |
+|-----------|---------|
+| **No vector database / RAG** | DataVita's infrastructure specs are under 500 tokens. They're injected directly into every prompt. RAG adds latency and complexity for a problem that doesn't need it. |
+| **No database** | Stateless = zero GDPR obligations, zero operational complexity, zero data liability. Lead capture (v1.1) adds opt-in storage only. |
+| **No user authentication** | Discovery conversations contain no sensitive personal data. Auth adds friction that reduces completion rate without meaningful security for v1. |
+| **No streaming** | A partial brief is worse than a 15-second wait — especially if the user wants the PDF. |
+
+---
+
+## The Key Architectural Decision
+
+> **Gemini writes the narrative. Python decides the infrastructure. Always.**
+
+This is not a preference. It is a trust decision.
+
+- AI is **probabilistic**. Infrastructure recommendations must be **deterministic**.
+- A wrong PUE figure, an invented rack density, or a non-existent facility is immediately detectable by anyone who checks datavita.co.uk.
+- The `infrastructure.py` module classifies workloads using keyword matching and maps them to real DataVita facilities with real specifications from `datavita.py`.
+- Gemini receives the predetermined facility as a **constraint** in its prompt. It writes the narrative around the infrastructure — it does not choose it.
+
+```python
+# This is Python, not AI. Same input → same output. Always.
+def classify_workload(text: str) -> str:
+    if contains_public_sector_keywords(text):
+        return "public_sector"  → DV1 Lanarkshire (Tier III, sovereign hosting)
+    if contains_gpu_keywords(text):
+        return "gpu_intensive"  → DV1 + CoreWeave GPU
+    if contains_city_facing_keywords(text):
+        return "city_facing"    → DV2 Glasgow (177 Bothwell Street)
+    return "general"            → DV1 (safest default)
+```
+
+---
+
+## Double Validation — Two Safety Nets
+
+Most AI tools validate the input OR the output. ScotlandAI Navigator validates **both**.
+
+### Safety Net 1: Input Validation (before Gemini)
+```
+✓ Bottleneck description ≥ 20 characters (not "N/A" or "test")
+✓ At least one data source mentioned (no data = no AI recommendation)
+✓ Value estimate is meaningful (not "0" or "nothing")
+✓ Risk appetite resolves to: quick_win | strategic | unknown
+✓ Technical capability resolves to: internal_team | needs_support | unknown
+```
+
+### Safety Net 2: Output Validation (after Gemini)
+```
+✓ Executive summary contains NO jargon (API, LLM, RAG, GPU, PUE, etc.)
+✓ Opportunities contain NO vague phrases ("improve efficiency", "leverage data")
+✓ Exactly 3 opportunities (not 2, not 4)
+✓ First step does NOT use words like "transform" or "overhaul"
+✓ If validation fails → Gemini retries with a tighter prompt (up to 2 retries)
+```
+
+---
+
+## DataVita Infrastructure — What's Real
+
+Every specification in the brief comes from [datavita.co.uk](https://datavita.co.uk). Nothing is invented.
+
+| Facility | Key Specs |
+|----------|----------|
+| **DV1 Lanarkshire** | 24MW (→40MW), Tier III certified (design + construction — only in Scotland), PUE 1.18, 100% renewable, liquid cooling to 200kW/rack, CoreWeave GPU on-site |
+| **DV2 Glasgow** | 1MW, 130 racks, 177 Bothwell Street, best connectivity in central Scotland |
+| **DV3** | Coming soon, adjacent to DV1, planning approved Jan 2026 |
+
+---
+
+## Quick Start
+
+### 1. Clone and install
+
+```bash
+git clone https://github.com/Goutamchandnani/ScotlandAI-Navigator.git
+cd ScotlandAI-Navigator/backend
+pip install -r requirements.txt
+```
+
+### 2. Configure
+
+```bash
+export GEMINI_API_KEY=your_key_from_aistudio_google_com
+export BASE_URL=http://localhost:8000  # or your Render URL
+```
+
+### 3. Run
+
+```bash
+uvicorn main:app --reload
+```
+
+### 4. Test
+
+```bash
+curl -X POST http://localhost:8000/generate-brief \
+  -H "Content-Type: application/json" \
+  -d '{
+    "organisation_and_bottleneck": "We are a Scottish council processing 400 planning applications monthly, each taking 3 hours to review and route manually to the correct planning officer.",
+    "data_assets": "PDFs of all planning applications going back 10 years, SQL database tracking decisions, Excel spreadsheets for officer assignments",
+    "value_of_improvement": "About £80,000 per year - roughly 2 full-time planning officers",
+    "risk_appetite": "quick_win",
+    "technical_capability": "needs_support"
+  }'
+```
+
+### 5. Deploy to Render
+
+1. Push to GitHub
+2. Create a New Web Service on Render → connect this repo
+3. Set `GEMINI_API_KEY` in Environment Variables
+4. Set `BASE_URL` to your `.onrender.com` URL
+5. Deploy — `render.yaml` handles the rest
+
+---
+
+## API Documentation
+
+Once running, visit:
+- **Swagger UI**: `http://localhost:8000/docs`
+- **ReDoc**: `http://localhost:8000/redoc`
+
+### Endpoints
+
+| Method | Path | Description |
+|--------|------|-------------|
+| `POST` | `/generate-brief` | Generate an AI Opportunity Brief from 5 discovery answers |
+| `GET` | `/download/{token}` | Download a generated PDF brief (60-min link) |
+| `GET` | `/health` | Service health check |
 
 ---
 
 ## Project Structure
 
 ```
-├── skills/scotland-ai-navigator/   # OpenClaw agent skill
-│   ├── SKILL.md                     # Skill manifest
-│   ├── antigravity_prompt.md        # Agent system prompt
-│   └── ai_rules.md                  # 10 rules governing AI behaviour
+├── README.md                            ← You are here
+├── render.yaml                          Render deployment (one-click)
+├── openclaw.json                        OpenClaw agent configuration
 │
-├── backend/                         # FastAPI backend
-│   ├── main.py                      # App entry point
-│   ├── core/config.py               # Environment-based configuration
-│   ├── schemas/                     # Pydantic validation models
-│   ├── services/                    # Brief builder, infra mapping, PDF gen
-│   └── knowledge/                   # Hard-coded DataVita specifications
+├── skills/scotland-ai-navigator/        OpenClaw agent skill
+│   ├── SKILL.md                         Skill manifest & trigger phrases
+│   ├── antigravity_prompt.md            Agent system prompt (the "soul")
+│   └── ai_rules.md                      10 rules governing AI behaviour
 │
-├── docs/                            # Design documentation
-│   ├── architecture.md              # Every technical decision explained
-│   └── prd.md                       # Product requirements
+├── backend/                             FastAPI backend (stateless)
+│   ├── main.py                          App entry + CORS + logging
+│   ├── requirements.txt                 Dependencies (each one justified)
+│   ├── api/router.py                    3 endpoints: generate, download, health
+│   ├── schemas/discovery.py             Input validation (5 discovery answers)
+│   ├── schemas/brief.py                 Output validation (catches vague language)
+│   ├── services/brief_builder.py        Prompt construction + Gemini call + retry
+│   ├── services/infrastructure.py       Deterministic infra mapping (Python, not AI)
+│   ├── services/pdf_generator.py        Professional PDF (ReportLab)
+│   ├── knowledge/datavita.py            Hard-coded DataVita specs (never AI-generated)
+│   └── core/
+│       ├── config.py                    Environment-based settings
+│       └── security.py                  Signed download tokens (itsdangerous)
 │
-├── render.yaml                      # One-click Render deployment
-└── openclaw.json                    # OpenClaw agent configuration
+├── docs/                                Design documentation
+│   ├── architecture.md                  Every technical decision explained
+│   └── prd.md                           Product requirements
+│
+└── tests/                               Test suite
+    ├── test_schemas.py                  Validation & mapping tests
+    └── test_api.py                      Integration tests
 ```
 
 ---
 
-## Tech Stack & Why
+## Security & Privacy
 
-| Technology | What it does | Why this, not something else |
-|-----------|-------------|------------------------------|
-| **Gemini 3 Flash Preview** | Generates brief content | Fast, cheap (<£0.01/brief), structured JSON output |
-| **FastAPI** | Backend API | Async, auto-validates with Pydantic, auto-generates docs |
-| **Pydantic V2** | Input validation | Catches nonsense answers before they reach the AI |
-| **ReportLab** | PDF generation | Pure Python, no external service, professional output |
-| **itsdangerous** | Download links | 60-min expiry tokens without needing a database |
-| **Render** | Deployment | Auto-deploy from GitHub, free tier, zero config |
+| Decision | Why |
+|----------|-----|
+| No data stored by default | Discovery answers processed transiently — no database writes |
+| API keys in environment only | Never logged, never in code, never transmitted to clients |
+| PDF links expire in 60 minutes | Briefs contain strategic information — not public indefinitely |
+| Pydantic validates all inputs | Prevents injection and catches malformed data before Gemini |
+| Gemini processes transiently | No training on submitted data |
+| Stateless backend | Zero GDPR obligations, zero data liability in v1 |
 
 ---
 
-## Quick Start
+## The 10 Rules (ai_rules.md)
 
-```bash
-# Clone
-git clone https://github.com/Goutamchandnani/ScotlandAI-Navigator.git
-cd ScotlandAI-Navigator/backend
+Every brief is governed by 10 explicit rules:
 
-# Install dependencies
-pip install -r requirements.txt
+1. **Only recommend AI built on data they actually have** — never invent data sources
+2. **No vague language** — banned phrase list with retry
+3. **Real DataVita specs only** — hard-coded, not AI-generated
+4. **Board-readable executive summary** — jargon detection and rejection
+5. **90-day first step** — achievable, not transformational
+6. **No competitor attacks** — show what DataVita adds, don't disparage alternatives
+7. **Validate all inputs** — Pydantic catches nonsense before Gemini
+8. **Graceful degradation** — structured fallback if Gemini is unavailable
+9. **One question at a time** — conversation, not a form (80% vs 40% completion rate)
+10. **The brief belongs to the user** — their data, their document, their choice to share
 
-# Set your Gemini API key
-export GEMINI_API_KEY=your_key_from_aistudio_google_com
+---
 
-# Run
-uvicorn main:app --reload
-```
+## Roadmap
+
+| Version | Feature |
+|---------|---------|
+| **v1.0** ✅ | Core: 5-question discovery → AI Opportunity Brief + PDF |
+| **v1.1** | Lead capture with explicit consent (webhook/Airtable) |
+| **v1.2** | Industry-specific discovery tracks (NHS, councils, logistics) |
+| **v1.3** | Analytics dashboard (briefs generated, sectors, common opportunities) |
+| **v2.0** | Full project proposals with effort estimates and delivery timelines |
 
 ---
 
 ## Built for the DataVita OpenClaw Challenge — May 2026
 
-This skill was built because it directly addresses the problem Danny Quinn has been writing about: the gap between Scotland's AI ambitions and the organisations that stand to benefit most from them.
+This skill was built because it directly addresses the problem Danny Quinn has been writing about for months: **the gap between Scotland's AI ambitions and the organisations that stand to benefit most from them.**
 
 ScotlandAI Navigator is not merely clever. It matters.
 
+Every cold inquiry becomes a warm lead.
+Every vague AI aspiration becomes a specific, buildable product.
+Every organisation gets a brief they can take into a boardroom — in under 10 minutes.
+
+---
+
 **Built by Goutam Chandnani** · [goutamchandnani.netlify.app](https://goutamchandnani.netlify.app)
+
+*Built with Google Antigravity IDE — an AI tool about AI, built using AI.*
