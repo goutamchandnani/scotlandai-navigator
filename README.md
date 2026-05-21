@@ -83,7 +83,7 @@ User messages:  "What could AI do for our council?"
 
 | Technology | What it does | Why this, not something else |
 |-----------|-------------|------------------------------|
-| **Gemini 2.0 Flash** | Generates brief content | Fast, cheap (<£0.01/brief), structured JSON output |
+| **Gemini 3 Flash Preview** | Generates brief content | Fast, cheap (<£0.01/brief), structured JSON output |
 | **FastAPI** | Backend API | Async, auto-validates with Pydantic, auto-generates docs |
 | **Pydantic V2** | Input validation | Catches nonsense answers before they reach the AI |
 | **ReportLab** | PDF generation | Pure Python, no external service, professional output |
