@@ -5,6 +5,7 @@
 [![Built for DataVita](https://img.shields.io/badge/Built%20for-DataVita%20OpenClaw%20Challenge-1B3A5C?style=for-the-badge)](https://datavita.co.uk)
 [![Powered by Gemini](https://img.shields.io/badge/Powered%20by-Gemini%203%20Flash-4285F4?style=for-the-badge)](https://ai.google.dev)
 [![Deploy to Render](https://img.shields.io/badge/Deploy%20to-Render-46E3B7?style=for-the-badge)](https://render.com)
+[![Live Leads](https://img.shields.io/badge/Live%20Leads-Airtable%20Pipeline-18BFFF?style=for-the-badge)](https://airtable.com/appKFAHPAQSJtzpj5/shryndr9iYDNkg6cM)
 
 ---
 
@@ -39,8 +40,12 @@ Through a **5-question conversational discovery** (one question at a time, like 
 | **Infrastructure Mapping** | Which DataVita facility (DV1, DV2, CoreWeave GPU) fits each workload |
 | **90-Day First Step** | The single smallest valuable thing they could ship this quarter |
 | **Downloadable PDF** | Professional document ready for board presentation (60-min link) |
+| **Lead Capture** | Optional opt-in — name + email forwarded to DataVita's AI Solutions team |
 
 **Every output is a warm, qualified lead for DataVita's AI Solutions team.**
+
+> 🔴 **Live pipeline**: Every opted-in lead from a real conversation appears in real-time at
+> **[airtable.com/appKFAHPAQSJtzpj5/shryndr9iYDNkg6cM](https://airtable.com/appKFAHPAQSJtzpj5/shryndr9iYDNkg6cM)**
 
 ---
 
@@ -96,6 +101,36 @@ Navigator: Got everything I need. Building your brief now...
 
            📎 Download PDF brief [valid 60 min]
 ```
+
+## See It In Action — Real Test Conversation
+
+> This is a **live test** run on 22 May 2026 with ScotWind Energy, a fictional Scottish renewable energy operator. Every response was generated in real-time from the actual conversation.
+
+**User:** We're ScotWind Energy — 14 onshore wind farms across Argyll, Sutherland, and Aberdeenshire, 340MW capacity. Biggest problem is unplanned turbine downtime. We're losing 18,000 MWh a year to unexpected gearbox and blade failures. Each outage costs around £40,000.
+
+**Navigator:** That's a significant operational impact — 18,000 MWh lost to preventable failures, and at £40,000 per outage, the business case for AI is already very strong. What data do you already have digitally?
+
+**User:** Every turbine generates SCADA telemetry every 10 minutes — 7 years of data across 280 turbines. Plus 6 years of maintenance logs with every fault code and engineer report. And 10 years of Met Office weather data.
+
+**Navigator:** That is a goldmine of a dataset. Seven years of SCADA telemetry synced with actual fault logs and weather history is the perfect foundation for a high-accuracy predictive maintenance model. If an AI model could give you 72 hours warning on a gearbox failure — switching from emergency repair to planned maintenance — what would a 10% reduction in that 18,000 MWh downtime be worth annually?
+
+**User:** Predicting 70% of failures 2 weeks in advance would save £500,000 in emergency maintenance plus recover 12,000 MWh worth £1.8M at current prices.
+
+**Navigator:** The scale of that opportunity — **£2.3 million in annual value** — is the kind of case that gets immediate board attention. *(continues discovery…)*
+
+**→ Output: Board-ready AI Opportunity Brief with 3 specific products:**
+
+| Opportunity | Infrastructure | Time to Value |
+|---|---|---|
+| Gearbox Failure Predictor | DV1 Lanarkshire + CoreWeave GPU | 90 days |
+| Blade Stress Weather Monitor | DV1 Lanarkshire | 60 days |
+| Maintenance Log Pattern Identifier | DV1 Lanarkshire | 45 days |
+
+**Recommended first step:** 90-day pilot on 2 wind farms using £350,000 approved budget + 35% Scottish Enterprise co-investment.
+
+![Scotland AI Opportunity Brief — ScotWind Energy example output](docs/brief-preview.png)
+
+> 🔴 After the brief, the user opted in to DataVita follow-up. The lead (name, email, organisation, brief summary, infrastructure recommendation) appeared in the **[live Airtable pipeline](https://airtable.com/appKFAHPAQSJtzpj5/shryndr9iYDNkg6cM)** within seconds — automatically, via the agent → FastAPI → Make.com → Airtable chain.
 
 ---
 
@@ -358,7 +393,7 @@ Every brief is governed by 10 explicit rules:
 | Version | Feature |
 |---------|---------|
 | **v1.0** ✅ | Core: 5-question discovery → AI Opportunity Brief + PDF |
-| **v1.1** | Lead capture with explicit consent (webhook/Airtable) |
+| **v1.1** ✅ | Lead capture with explicit consent — opted-in leads forwarded to [live Airtable pipeline](https://airtable.com/appKFAHPAQSJtzpj5/shryndr9iYDNkg6cM) |
 | **v1.2** | Industry-specific discovery tracks (NHS, councils, logistics) |
 | **v1.3** | Analytics dashboard (briefs generated, sectors, common opportunities) |
 | **v2.0** | Full project proposals with effort estimates and delivery timelines |
