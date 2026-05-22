@@ -56,6 +56,16 @@ class Settings(BaseSettings):
         )
     )
 
+    # ── Telegram Bot (v1.2 — optional) ──
+    TELEGRAM_BOT_TOKEN: str | None = Field(
+        default=None,
+        description=(
+            "Telegram Bot token from BotFather. When set, the bot runs as a "
+            "webhook handler inside FastAPI on Render — always on, no OpenClaw "
+            "required. If not set, the /telegram/webhook endpoint is disabled."
+        )
+    )
+
     # ── PDF ──
     PDF_EXPIRY_MINUTES: int = Field(
         default=60,

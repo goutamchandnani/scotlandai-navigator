@@ -4,19 +4,27 @@ ScotlandAI Navigator — FastAPI Application Entry Point
 This is where the backend starts. It:
 1. Creates the FastAPI application with metadata for auto-generated docs
 2. Configures CORS (which origins can call this API)
-3. Registers the API router
-4. Sets up logging
+3. Registers the API router (generate-brief, download, health, capture-lead)
+4. Initialises the Telegram bot webhook (v1.2 — if TELEGRAM_BOT_TOKEN is set)
+5. Sets up logging
 
 ARCHITECTURE NOTE:
-The backend is deliberately thin. The OpenClaw agent handles the 5-question
-discovery conversation. The backend only activates when all 5 answers are
-collected and validated. One POST request in, one brief out.
+The backend handles two modes of interaction:
+  - Direct API: OpenClaw agent POSTs to /generate-brief (5 answers → brief)
+  - Telegram bot: Users message @ScotlandAINavigtorBot → webhook → conversation
+    state → /generate-brief called internally → brief sent back via Telegram
 
-No sessions. No database. No user accounts. Stateless by design.
+Both paths use the same brief generation pipeline. The Telegram bot adds a
+conversation state layer on top — managing the 5-question discovery in-process.
+
+No sessions. No database. Stateless brief generation.
+Telegram conversation state is in-memory (acceptable for competition demo).
 """
 
 import logging
-from fastapi import FastAPI
+from contextlib import asynccontextmanager
+
+from fastapi import FastAPI, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 
 from core.config import settings
@@ -30,6 +38,51 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
+# ── Telegram bot (initialised at startup if token is configured) ──
+_telegram_app = None
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Startup and shutdown logic."""
+    global _telegram_app
+
+    logger.info("=" * 60)
+    logger.info("ScotlandAI Navigator API starting up")
+    logger.info(f"  Environment: {settings.ENVIRONMENT}")
+    logger.info(f"  Base URL: {settings.BASE_URL}")
+    logger.info(f"  PDF expiry: {settings.PDF_EXPIRY_MINUTES} minutes")
+    logger.info(f"  Gemini API key: {'configured' if settings.GEMINI_API_KEY else 'MISSING'}")
+    logger.info(f"  Lead capture: {'enabled' if settings.LEAD_CAPTURE_WEBHOOK else 'disabled'}")
+
+    if settings.TELEGRAM_BOT_TOKEN:
+        try:
+            from services.telegram_bot import build_telegram_app
+            _telegram_app = build_telegram_app()
+            await _telegram_app.initialize()
+
+            # Register webhook with Telegram
+            webhook_url = f"{settings.BASE_URL}/telegram/webhook"
+            await _telegram_app.bot.set_webhook(
+                url=webhook_url,
+                allowed_updates=["message"],
+            )
+            logger.info(f"  Telegram bot: webhook registered at {webhook_url}")
+        except Exception as e:
+            logger.error(f"  Telegram bot: failed to initialise — {e}")
+    else:
+        logger.info("  Telegram bot: TELEGRAM_BOT_TOKEN not set — bot disabled")
+
+    logger.info("=" * 60)
+
+    yield
+
+    # Shutdown
+    if _telegram_app:
+        await _telegram_app.shutdown()
+        logger.info("Telegram bot shut down cleanly")
+
+
 # ═══════════════════════════════════════════════
 # Application
 # ═══════════════════════════════════════════════
@@ -39,16 +92,17 @@ app = FastAPI(
     description=(
         "Generates AI Opportunity Briefs for Scottish organisations on DataVita infrastructure. "
         "Takes 5 discovery answers, produces 3 specific AI product recommendations "
-        "with infrastructure mapping, and generates a downloadable PDF."
+        "with infrastructure mapping, and generates a downloadable PDF. "
+        "Also powers the @ScotlandAINavigtorBot Telegram bot."
     ),
-    version="1.0.0",
+    version="1.2.0",
     docs_url="/docs",
     redoc_url="/redoc",
+    lifespan=lifespan,
 )
 
 
 # ── CORS Middleware ──
-# Allows the OpenClaw agent and web clients to call this API
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.ALLOWED_ORIGINS,
@@ -62,15 +116,26 @@ app.add_middleware(
 app.include_router(router)
 
 
-# ── Startup Event ──
-@app.on_event("startup")
-async def startup():
-    """Log configuration on startup (without exposing secrets)."""
-    logger.info("=" * 60)
-    logger.info("ScotlandAI Navigator API starting up")
-    logger.info(f"  Environment: {settings.ENVIRONMENT}")
-    logger.info(f"  Base URL: {settings.BASE_URL}")
-    logger.info(f"  PDF expiry: {settings.PDF_EXPIRY_MINUTES} minutes")
-    logger.info(f"  CORS origins: {settings.ALLOWED_ORIGINS}")
-    logger.info(f"  Gemini API key: {'configured' if settings.GEMINI_API_KEY else 'MISSING'}")
-    logger.info("=" * 60)
+# ═══════════════════════════════════════════════
+# POST /telegram/webhook — Telegram bot webhook
+# ═══════════════════════════════════════════════
+
+@app.post("/telegram/webhook")
+async def telegram_webhook(request: Request):
+    """
+    Receive updates from Telegram and process them through the bot.
+
+    Telegram calls this endpoint for every message sent to the bot.
+    We pass the update to python-telegram-bot for routing to the
+    correct handler (start command, message, etc.).
+
+    Returns 200 immediately — Telegram expects a fast response.
+    """
+    if _telegram_app is None:
+        return Response(status_code=503, content="Telegram bot not configured")
+
+    from telegram import Update
+    data = await request.json()
+    update = Update.de_json(data, _telegram_app.bot)
+    await _telegram_app.process_update(update)
+    return Response(status_code=200)
