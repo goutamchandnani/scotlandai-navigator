@@ -269,8 +269,10 @@ async def handle_message(update: Update, context) -> None:
         except Exception:
             pass
 
+        # Escape email for MarkdownV2 — pre-computed to avoid backslash in f-string (Python 3.11)
+        safe_email = email.replace('.', '\\.').replace('-', '\\-').replace('_', '\\_')
         await update.message.reply_text(
-            f"✅ Done\\. The DataVita AI Solutions team will be in touch at {email.replace('.', '\\.')}\\.\n\n"
+            f"\u2705 Done\\. The DataVita AI Solutions team will be in touch at {safe_email}\\.\n\n"
             "The PDF brief has everything they'll need to get started\\.",
             parse_mode=ParseMode.MARKDOWN_V2,
         )
@@ -320,10 +322,11 @@ async def handle_message(update: Update, context) -> None:
     session["step"] += 1
 
     if session["step"] <= 5:
-        # Ask next question
-        _, next_question = QUESTIONS[session["step"] - 1]
+        # Ask next question — pre-compute step to avoid quotes-in-f-string (Python 3.11)
+        next_step = session["step"]
+        _, next_question = QUESTIONS[next_step - 1]
         await update.message.reply_text(
-            f"*Question {session['step']} of 5*\n\n{next_question}",
+            f"*Question {next_step} of 5*\n\n{next_question}",
             parse_mode=ParseMode.MARKDOWN_V2,
         )
     else:
