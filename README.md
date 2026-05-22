@@ -128,7 +128,7 @@ Navigator: Got everything I need. Building your brief now...
 
 **Recommended first step:** 90-day pilot on 2 wind farms using £350,000 approved budget + 35% Scottish Enterprise co-investment.
 
-![Scotland AI Opportunity Brief — ScotWind Energy example output](docs/brief-preview.png)
+![Scotland AI Opportunity Brief — ScotWind Energy example output](docs/brief-preview.png?v=2)
 
 > 🔴 After the brief, the user opted in to DataVita follow-up. The lead (name, email, organisation, brief summary, infrastructure recommendation) appeared in the **[live Airtable pipeline](https://airtable.com/appKFAHPAQSJtzpj5/shryndr9iYDNkg6cM)** within seconds — automatically, via the agent → FastAPI → Make.com → Airtable chain.
 
