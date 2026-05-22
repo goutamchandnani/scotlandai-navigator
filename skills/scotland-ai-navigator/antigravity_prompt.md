@@ -193,12 +193,20 @@ and I'll pass your details across."
 If the user says YES:
 → Ask for their name if you don't already have it
 → Ask for their email address
-→ Call POST /capture-lead with:
-   - name (what they gave)
-   - email (what they gave)
-   - organisation (from their first discovery answer)
-   - brief_summary (the executive summary from the brief)
-   - infrastructure_recommended (the DataVita facility recommended)
+→ Use curl to POST to the lead capture endpoint. Run this exact command, substituting the real values:
+
+```bash
+curl -s -X POST "$NAVIGATOR_API_URL/capture-lead" \
+  -H "Content-Type: application/json" \
+  -d "{
+    \"name\": \"<name>\",
+    \"email\": \"<email>\",
+    \"organisation\": \"<organisation from discovery>\",
+    \"brief_summary\": \"<executive summary from the brief>\",
+    \"infrastructure_recommended\": \"<DataVita facility recommended>\"
+  }"
+```
+
 → Then say:
    "Done. The team will be in touch at [email]. In the meantime, the PDF
    brief has everything they'll need to get started."
