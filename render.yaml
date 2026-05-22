@@ -22,5 +22,7 @@ services:
         value: "60"
       - key: PYTHON_VERSION
         value: "3.11"
+      - key: BASE_URL
+        value: "https://scotland-ai-navigator.onrender.com"
       - key: TELEGRAM_BOT_TOKEN
         sync: false            # Set manually in Render dashboard (secret)

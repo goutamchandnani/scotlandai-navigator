@@ -57,17 +57,34 @@ async def lifespan(app: FastAPI):
 
     if settings.TELEGRAM_BOT_TOKEN:
         try:
+            import asyncio
             from services.telegram_bot import build_telegram_app
             _telegram_app = build_telegram_app()
             await _telegram_app.initialize()
 
-            # Register webhook with Telegram
             webhook_url = f"{settings.BASE_URL}/telegram/webhook"
-            await _telegram_app.bot.set_webhook(
-                url=webhook_url,
-                allowed_updates=["message"],
-            )
-            logger.info(f"  Telegram bot: webhook registered at {webhook_url}")
+
+            # Check if webhook is already set correctly (avoids flood control
+            # when 2 gunicorn workers both try to register at startup)
+            current = await _telegram_app.bot.get_webhook_info()
+            if current.url == webhook_url:
+                logger.info(f"  Telegram bot: webhook already set at {webhook_url}")
+            else:
+                # Retry up to 3 times with backoff (handles flood control)
+                for attempt in range(3):
+                    try:
+                        await _telegram_app.bot.set_webhook(
+                            url=webhook_url,
+                            allowed_updates=["message"],
+                        )
+                        logger.info(f"  Telegram bot: webhook registered at {webhook_url}")
+                        break
+                    except Exception as e:
+                        if attempt < 2:
+                            await asyncio.sleep(2 ** attempt)  # 1s, 2s backoff
+                        else:
+                            raise e
+
         except Exception as e:
             logger.error(f"  Telegram bot: failed to initialise — {e}")
     else:
