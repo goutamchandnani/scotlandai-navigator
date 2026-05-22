@@ -334,5 +334,16 @@ for the AI Opportunity Brief generation step — the agent needs to reason acros
 user's answers, cross-reference DataVita's infrastructure specs, and produce output
 that is specific enough to be credible. Low thinking produces generic output.
 Medium thinking produces the specificity that makes the brief actually useful.
-Temperature is set to 0.3 — low enough for consistent, structured output, high
-enough for natural conversation in the discovery phase.
+
+### Two Gemini calls, two temperature configs
+
+This agent makes two separate Gemini calls with intentionally different temperature
+settings — they govern different parts of the experience:
+
+| Call | Temperature | Why |
+|------|-------------|-----|
+| **Discovery conversation** (the 5 questions) | `0.6` | Needs to feel natural, warm, and adaptive. High enough that responses don't sound robotic or templated. This is the temperature set in `openclaw.json` — it governs the conversational layer only. |
+| **Brief generation** (the final output) | `0.3` | Needs to be consistent, structured, and precise. Low enough to produce repeatable, board-ready document output without drift. This is set in the backend `gemini_client.py` brief generation call specifically. |
+
+These are not a contradiction — they are a deliberate design decision.
+The conversation must feel human. The document must feel authoritative.
