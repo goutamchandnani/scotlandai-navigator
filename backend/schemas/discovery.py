@@ -101,13 +101,27 @@ class DiscoveryAnswers(BaseModel):
         Rule 7 compliance: reject placeholder answers.
         If someone types "N/A" or "test", the agent should ask again,
         not send garbage to Gemini.
+
+        Checks both exact matches AND strings that START with a blocked
+        placeholder word followed by a separator (e.g. "N/A — just testing").
         """
         blocked = {"n/a", "na", "none", "nothing", "test", "asdf", "hello", "hi", "xxx"}
-        if v.strip().lower() in blocked:
+        normalised = v.strip().lower()
+        # Exact match
+        if normalised in blocked:
             raise ValueError(
                 "Please describe your organisation and its biggest operational challenge. "
                 "The more specific you are, the more useful the brief will be."
             )
+        # Prefix match — catches "N/A — this is just a test" etc.
+        for word in blocked:
+            if normalised.startswith(word) and (
+                len(normalised) == len(word) or not normalised[len(word)].isalpha()
+            ):
+                raise ValueError(
+                    "Please describe your organisation and its biggest operational challenge. "
+                    "The more specific you are, the more useful the brief will be."
+                )
         return v
 
     @field_validator("data_assets")

@@ -148,3 +148,66 @@ class TestInfrastructureMapping:
         text = "council planning applications for citizens and residents"
         results = [classify_workload(text) for _ in range(100)]
         assert len(set(results)) == 1, "Infrastructure mapping must be deterministic"
+
+
+# ═══════════════════════════════════════════════
+# Lead Capture Schema Tests (v1.1)
+# ═══════════════════════════════════════════════
+
+class TestLeadCaptureSchema:
+    """Test that lead capture validates contact data correctly."""
+
+    def test_valid_lead_passes(self):
+        """A complete, valid lead should validate successfully."""
+        from backend.schemas.lead import LeadCaptureRequest
+        lead = LeadCaptureRequest(
+            name="Jane Smith",
+            email="jane.smith@fife.gov.uk",
+            organisation="Fife Council",
+            brief_summary="Fife Council processes 400 planning applications monthly.",
+            infrastructure_recommended="DV1 Lanarkshire",
+        )
+        assert lead.name == "Jane Smith"
+        assert lead.email == "jane.smith@fife.gov.uk"
+
+    def test_invalid_email_rejected(self):
+        """Malformed email addresses must be rejected."""
+        from backend.schemas.lead import LeadCaptureRequest
+        with pytest.raises(Exception):
+            LeadCaptureRequest(
+                name="Jane Smith",
+                email="not-an-email",
+                organisation="Fife Council",
+            )
+
+    def test_name_too_short_rejected(self):
+        """A single character name should be rejected."""
+        from backend.schemas.lead import LeadCaptureRequest
+        with pytest.raises(Exception):
+            LeadCaptureRequest(
+                name="J",
+                email="jane@fife.gov.uk",
+                organisation="Fife Council",
+            )
+
+    def test_optional_fields_are_optional(self):
+        """brief_summary and infrastructure_recommended are not required."""
+        from backend.schemas.lead import LeadCaptureRequest
+        lead = LeadCaptureRequest(
+            name="Alex Brown",
+            email="alex@example.com",
+            organisation="NHS Lothian",
+        )
+        assert lead.brief_summary is None
+        assert lead.infrastructure_recommended is None
+
+    def test_extra_fields_rejected(self):
+        """Unexpected fields must be rejected (security measure)."""
+        from backend.schemas.lead import LeadCaptureRequest
+        with pytest.raises(Exception):
+            LeadCaptureRequest(
+                name="Jane Smith",
+                email="jane@fife.gov.uk",
+                organisation="Fife Council",
+                injection_field="DROP TABLE leads;",
+            )

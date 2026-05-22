@@ -6,7 +6,7 @@ description: >
   board-ready AI Opportunity Brief with three specific AI products mapped to
   DataVita's real infrastructure — DV1, DV2, and CoreWeave GPU. Turns a cold
   inquiry into a warm lead for DataVita's AI Solutions team in under 10 minutes.
-version: 1.0.0
+version: 1.1.0
 metadata:
   openclaw:
     requires:
@@ -33,10 +33,13 @@ metadata:
       - name: LEAD_CAPTURE_WEBHOOK
         required: false
         description: >
-          Optional webhook URL (e.g. Airtable, Make, Zapier) to receive
-          lead capture data when a user opts in at the end of their brief.
-          If not set, lead capture is silently disabled and the opt-in
-          prompt is not shown.
+          Webhook URL (Airtable, Make, Zapier, or any HTTP endpoint) to
+          receive opted-in lead data when a user says yes to DataVita
+          follow-up after their brief. Payload includes name, email,
+          organisation, brief executive summary, and infrastructure
+          recommendation. If not set, the opt-in prompt is still shown
+          but contact data is logged server-side only. Enable by setting
+          this variable — no code change required.
       - name: PDF_EXPIRY_MINUTES
         required: false
         description: >
@@ -195,10 +198,20 @@ Agent: Got everything I need. Building your brief now...
        hits 85%+ accuracy — which is typical for this type of document —
        you have the internal case for full deployment.
 
-       📎 Full PDF brief: [download — valid 60 min]
+        📎 Full PDF brief: [download — valid 60 min]
 
-       To explore any of these on DataVita's infrastructure:
-       datavita.co.uk/contact | AI Solutions team
+        To explore any of these on DataVita's infrastructure:
+        datavita.co.uk/contact | AI Solutions team
+
+        ─────────────────────────────────────────────
+        Would you like DataVita's AI Solutions team to reach
+        out and talk through any of these with you? If yes,
+        just share your name and email.
+
+User:   Yes — Jane Smith, jane.smith@fife.gov.uk
+
+Agent:  Done. The team will be in touch at jane.smith@fife.gov.uk.
+        The PDF brief has everything they need to get started.
 ```
 
 ---
@@ -239,6 +252,13 @@ The brief always contains:
 ---
 
 ## Infrastructure mapping (how the brief chooses the right DataVita tier)
+
+| Method | Path | Description |
+|--------|------|-------------|
+| `POST` | `/generate-brief` | Generate an AI Opportunity Brief from 5 discovery answers |
+| `POST` | `/capture-lead` | Forward opted-in lead data to the LEAD_CAPTURE_WEBHOOK (v1.1) |
+| `GET` | `/download/{token}` | Download a generated PDF brief (60-min link) |
+| `GET` | `/health` | Service health check (also reports lead_capture: enabled/disabled) |
 
 | Workload type | DataVita recommendation |
 |---------------|------------------------|

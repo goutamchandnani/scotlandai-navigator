@@ -27,8 +27,10 @@ from core.config import settings
 from core.security import generate_download_token, verify_download_token
 from schemas.discovery import DiscoveryAnswers
 from schemas.brief import APIBriefResponse
+from schemas.lead import LeadCaptureRequest, LeadCaptureResponse
 from services.brief_builder import generate_brief, extract_organisation_name
 from services.pdf_generator import generate_pdf, save_pdf
+from services.lead_capture import send_lead_to_webhook
 
 logger = logging.getLogger(__name__)
 
@@ -222,9 +224,62 @@ async def health_check():
     return {
         "status": "healthy",
         "service": "scotland-ai-navigator",
-        "version": "1.0.0",
+        "version": "1.1.0",
         "timestamp": datetime.now(timezone.utc).isoformat(),
+        "lead_capture": "enabled" if settings.LEAD_CAPTURE_WEBHOOK else "disabled",
     }
+
+
+# ═══════════════════════════════════════════════
+# POST /capture-lead — Lead capture (v1.1)
+# ═══════════════════════════════════════════════
+
+@router.post(
+    "/capture-lead",
+    response_model=LeadCaptureResponse,
+    summary="Capture an opted-in lead for DataVita's AI Solutions team",
+    description=(
+        "Called by the OpenClaw agent when a user explicitly opts in to "
+        "follow-up after receiving their AI Opportunity Brief. Forwards "
+        "name, email, and brief context to the configured LEAD_CAPTURE_WEBHOOK. "
+        "If no webhook is configured, returns success silently. "
+        "Never errors — a webhook failure never degrades the user experience."
+    ),
+    responses={
+        200: {"description": "Lead captured (or silently skipped if webhook not configured)"},
+        422: {"description": "Validation error — name or email format invalid"},
+    },
+)
+async def capture_lead(lead: LeadCaptureRequest):
+    """
+    Opt-in lead capture — Rule 10 compliant.
+
+    This endpoint only exists because the user said yes. The agent
+    must never call this without explicit user consent.
+
+    The response is always a success message from the user's perspective
+    — whether or not the webhook delivery succeeded. Webhook failures
+    are logged server-side for ops, not surfaced to the user.
+    """
+    logger.info(f"Lead capture request for {lead.email} from {lead.organisation}")
+
+    webhook_success = await send_lead_to_webhook(lead)
+
+    if webhook_success:
+        logger.info(f"Lead forwarded to DataVita webhook for {lead.email}")
+    else:
+        logger.warning(
+            f"Lead webhook delivery failed or not configured for {lead.email} — "
+            f"lead data logged server-side only"
+        )
+
+    return LeadCaptureResponse(
+        success=True,
+        message=(
+            f"Thanks {lead.name.split()[0]}. DataVita's AI Solutions team will be in "
+            f"touch at {lead.email} to discuss the opportunities in your brief."
+        ),
+    )
 
 
 # ═══════════════════════════════════════════════

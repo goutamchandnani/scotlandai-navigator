@@ -46,6 +46,16 @@ class Settings(BaseSettings):
         description="Secret key for signing PDF download tokens"
     )
 
+    # ── Lead Capture (v1.1 — optional) ──
+    LEAD_CAPTURE_WEBHOOK: str | None = Field(
+        default=None,
+        description=(
+            "Optional webhook URL (Airtable, Make, Zapier, etc.) to receive lead data "
+            "when a user opts in to follow-up after receiving their brief. "
+            "If not set, lead capture is silently disabled."
+        )
+    )
+
     # ── PDF ──
     PDF_EXPIRY_MINUTES: int = Field(
         default=60,
